@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: billshield
+      POSTGRES_USER: billshield
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U billshield"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  web:
+    build: .
+    ports: ["3000:3000"]
+    environment:
+      DATABASE_URL: postgresql://billshield:${POSTGRES_PASSWORD}@db:5432/billshield?schema=public
+      APP_ORIGIN: ${APP_ORIGIN:-http://localhost:3000}
+      RATE_LIMIT_SECRET: ${RATE_LIMIT_SECRET:?Set RATE_LIMIT_SECRET}
+      CRON_SECRET: ${CRON_SECRET:?Set CRON_SECRET}
+    depends_on:
+      db:
+        condition: service_healthy
+    mem_limit: 1g
+volumes:
+  postgres_data:

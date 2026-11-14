@@ -1,0 +1,212 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String      @id @default(cuid())
+  email      String      @unique
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  workspaces Workspace[]
+}
+
+model Workspace {
+  id          String           @id @default(cuid())
+  kind        String           @default("GUEST")
+  ownerUserId String?
+  owner       User?            @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  expiresAt   DateTime
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  sessions    GuestSession[]
+  accounts    ServiceAccount[]
+  documents   DocumentAsset[]
+  usage       ApiUsage[]
+  audit       AuditEvent[]
+
+  @@index([expiresAt])
+}
+
+model GuestSession {
+  id             String    @id @default(cuid())
+  workspaceId    String
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  tokenHash      String    @unique
+  expiresAt      DateTime
+  createdAt      DateTime  @default(now())
+  lastAccessedAt DateTime  @default(now())
+
+  @@index([workspaceId])
+  @@index([expiresAt])
+}
+
+model ServiceAccount {
+  id           String         @id @default(cuid())
+  workspaceId  String
+  workspace    Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  providerName String
+  category     String         @default("INTERNET")
+  displayName  String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  bills        Bill[]
+  savings      SavingsEvent[]
+
+  @@index([workspaceId])
+}
+
+model Bill {
+  id                      String         @id @default(cuid())
+  serviceAccountId        String
+  serviceAccount          ServiceAccount @relation(fields: [serviceAccountId], references: [id], onDelete: Cascade)
+  documentAssetId         String?        @unique
+  documentAsset           DocumentAsset? @relation(fields: [documentAssetId], references: [id], onDelete: SetNull)
+  periodStart             DateTime?
+  periodEnd               DateTime?
+  statementDate           DateTime?
+  dueDate                 DateTime?
+  totalCents              Int?
+  currency                String         @default("USD")
+  status                  String         @default("DRAFT")
+  extractionVersion       String         @default("deterministic-v1")
+  revision                Int            @default(1)
+  discrepancyAcknowledged Boolean        @default(false)
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+  lineItems               BillLineItem[]
+  analyses                Analysis[]
+
+  @@index([serviceAccountId, createdAt])
+}
+
+model BillLineItem {
+  id             String   @id @default(cuid())
+  billId         String
+  bill           Bill     @relation(fields: [billId], references: [id], onDelete: Cascade)
+  description    String
+  category       String
+  amountCents    Int
+  recurrenceType String
+  confidence     Float
+  evidence       String
+  createdAt      DateTime @default(now())
+
+  @@index([billId])
+}
+
+model DocumentAsset {
+  id               String    @id @default(cuid())
+  workspaceId      String
+  workspace        Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  storageKey       String?
+  originalFilename String
+  contentType      String
+  sizeBytes        Int
+  sha256           String
+  processingStatus String
+  expiresAt        DateTime
+  deletedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  bill             Bill?
+
+  @@unique([workspaceId, sha256])
+  @@index([workspaceId])
+}
+
+model Analysis {
+  id            String        @id @default(cuid())
+  billId        String
+  bill          Bill          @relation(fields: [billId], references: [id], onDelete: Cascade)
+  status        String        @default("COMPLETE")
+  ruleVersion   String        @default("rules-v1")
+  sourceVersion Int
+  completedAt   DateTime      @default(now())
+  createdAt     DateTime      @default(now())
+  opportunities Opportunity[]
+
+  @@unique([billId, sourceVersion])
+}
+
+model Opportunity {
+  id                     String       @id @default(cuid())
+  analysisId             String
+  analysis               Analysis     @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  type                   String
+  title                  String
+  explanation            String
+  evidenceJson           Json
+  currentChargeCents     Int
+  minMonthlySavingsCents Int
+  maxMonthlySavingsCents Int
+  oneTimeSavingsCents    Int          @default(0)
+  verificationStatus     String       @default("UNVERIFIED")
+  overlapGroup           String
+  assumptions            String
+  nextStep               String
+  createdAt              DateTime     @default(now())
+  actions                ActionPlan[]
+
+  @@index([analysisId])
+}
+
+model ActionPlan {
+  id               String         @id @default(cuid())
+  opportunityId    String         @unique
+  opportunity      Opportunity    @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  script           String
+  status           String         @default("PLANNED")
+  userNotes        String         @default("")
+  providerResponse String         @default("")
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  savings          SavingsEvent[]
+}
+
+model SavingsEvent {
+  id                   String         @id @default(cuid())
+  serviceAccountId     String
+  serviceAccount       ServiceAccount @relation(fields: [serviceAccountId], references: [id], onDelete: Cascade)
+  actionPlanId         String         @unique
+  actionPlan           ActionPlan     @relation(fields: [actionPlanId], references: [id], onDelete: Cascade)
+  previousMonthlyCents Int
+  newMonthlyCents      Int
+  effectiveAt          DateTime
+  confirmationStatus   String
+  notes                String         @default("")
+  createdAt            DateTime       @default(now())
+
+  @@index([serviceAccountId, effectiveAt])
+}
+
+model AuditEvent {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  event       String
+  createdAt   DateTime  @default(now())
+
+  @@index([workspaceId])
+}
+
+model ApiUsage {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  key         String
+  count       Int       @default(1)
+
+  @@unique([workspaceId, key])
+}
+
+model RateLimit {
+  key       String   @id
+  count     Int      @default(1)
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}

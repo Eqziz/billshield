@@ -1,0 +1,42 @@
+name: BillShield CI
+on: [push, pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: billshield
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: billshield
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U billshield"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://billshield:ci-only-password@localhost:5432/billshield?schema=public
+      APP_ORIGIN: http://localhost:3000
+      RATE_LIMIT_SECRET: ci-only-random-rate-limit-secret-9084
+      CRON_SECRET: ci-only-cleanup-secret
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run db:migrate
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npm audit --omit=dev
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-test-report
+          path: playwright-report/
