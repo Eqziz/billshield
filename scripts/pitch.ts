@@ -17,7 +17,7 @@ function ascii(s: string) {
     .replace(/[“”]/g, '"');
 }
 for (const [index, slide] of slides.entries()) {
-  const [title, ...body] = slide.trim().split("\n");
+  const [title, ...body] = slide.trim().split(/\r?\n/);
   const page = doc.addPage([960, 540]);
   page.drawRectangle({
     x: 0,
