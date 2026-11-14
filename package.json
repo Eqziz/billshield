@@ -24,6 +24,7 @@
     "fixtures": "tsx scripts/fixtures.ts",
     "cleanup": "tsx scripts/cleanup.ts",
     "pitch": "tsx scripts/pitch.ts",
+    "pitch:capture": "tsx scripts/pitch-capture.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -39,6 +40,7 @@
   "devDependencies": {
     "@playwright/test": "^1.58.0",
     "@types/node": "^24.10.0",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "dotenv": "^17.2.0",
@@ -48,6 +50,7 @@
     "pdf-lib": "^1.17.1",
     "prettier": "^3.10.1",
     "prisma": "6.19.3",
+    "qrcode": "^1.5.4",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.0"

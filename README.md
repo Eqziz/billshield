@@ -2,6 +2,8 @@
 
 **Stop overpaying. Start saving.** A working guest-first application for understanding U.S. residential internet bills, preparing provider conversations and tracking user-confirmed reductions.
 
+**Live application:** [billshield-tyxt.onrender.com](https://billshield-tyxt.onrender.com). Verified with the full guest PDF-to-outcome browser journey.
+
 ## Run locally
 
 Use **Node.js 22 LTS (22.3 or later)** and npm. The original machine had Node 26 outside PATH; a portable Node 22 runtime was downloaded under ignored `.local/` for verification. Do not commit it.
@@ -87,9 +89,9 @@ Playwright starts a production server if one is not already running. PostgreSQL 
 
 Free hackathon deployment: **[Deploy to Render](https://render.com/deploy?repo=https://github.com/Eqziz/billshield)**. The included Blueprint declares a Free web service and Free PostgreSQL database, generates secrets and applies migrations automatically. The web service sleeps on inactivity; the free database expires after 30 days. See [the exact setup and limits](docs/RENDER.md). This link opens deployment setup; an actual hosted URL is not yet verified.
 
-See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for Docker/managed PostgreSQL and Vercel instructions, serverless upload caveats and release checks. Public source: [https://github.com/Eqziz/billshield](https://github.com/Eqziz/billshield), verified accessible without authentication. **No public application deployment has been verified.** Hosting and managed database access are still needed. The Node/Prisma/child-process application is not compatible with Sites Worker hosting without substantial runtime changes.
+See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for Docker/managed PostgreSQL and Vercel instructions, serverless upload caveats and release checks. Public source: [https://github.com/Eqziz/billshield](https://github.com/Eqziz/billshield), verified accessible without authentication. **Public application verified:** https://billshield-tyxt.onrender.com. The Render deployment uses managed PostgreSQL; free-plan lifetime and capacity limits still apply. The Node/Prisma/child-process application is not compatible with Sites Worker hosting without substantial runtime changes.
 
-Pitch source: [PITCH.md](docs/PITCH.md). Generate the ten-slide PDF with `npm run pitch`.
+Presentation: [10-slide PDF](docs/BillShield-pitch.pdf), [standalone HTML deck](docs/BillShield-pitch.html), [overview](docs/BillShield-pitch-preview.png), and [English speaker notes](docs/PITCH.md). The deck includes actual hosted-product screenshots, QR codes and clickable links. Pricing/revenue examples remain labeled hypotheses. Run `npx playwright install chromium` once, then `npm run pitch` to regenerate the artifacts; `npm run pitch:capture` refreshes screenshots in a disposable synthetic guest workspace. Editable layouts are in `scripts/pitch/deck.ts` and `scripts/pitch/theme.css`.
 
 ## Security, privacy and limits
 

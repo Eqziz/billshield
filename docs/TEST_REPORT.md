@@ -44,8 +44,8 @@ Fixtures are synthetic and clearly marked in the documents and application. Prod
 
 ## Unverified areas and release blockers
 
-- Public source is published and verified at https://github.com/Eqziz/billshield: anonymous HTTP 200 and matching GitHub/local source commits. No public application URL has been verified. The pushed workflow can run CI; its remote results must be checked separately from the local results above.
-- No production managed PostgreSQL, HTTPS/proxy configuration, request concurrency/body-size limits or scheduled cleanup has been provisioned.
+- Public source is published and verified at https://github.com/Eqziz/billshield: anonymous HTTP 200 and matching GitHub/local source commits. The public application has since been verified at https://billshield-tyxt.onrender.com with three passing browser/API scenarios. The pushed workflow can run CI; its remote results must be checked separately from the local results above.
+- Render application and PostgreSQL are deployed over HTTPS. Peak-memory/load behavior, proxy header trust, ingress limits and timed cleanup while sleeping remain outside the verified functional scenarios.
 - Docker and Linux CI configurations are provided but were not executed locally. Only Windows/Node 22 and Chromium were executed.
 - Serverless subprocess dependency tracing needs a real hosted smoke test. Vercel ingress may reject documents below the app's 10 MB maximum; use a Node container or implement private-storage intake before promising the full limit there.
 - Live AI output quality and Sentry delivery are unverified. Their failure paths are tested/sanitized; neither integration is advertised as live in the default configuration.
@@ -59,4 +59,10 @@ Fixtures are synthetic and clearly marked in the documents and application. Prod
 
 The Render Blueprint passed the official JSON Schema from https://render.com/schema/render.yaml.json. Nine hosted-configuration tests cover Render origin/port resolution, custom domains, local verification and fail-closed validation. Strict TypeScript and lint passed. The hosted launcher successfully applied migrations, removed expired guests and ran the production application with a 192 MB Next.js heap; all three production browser/API scenarios passed against that launcher. All 47 Vitest tests passed afterward.
 
-This was a local verification of the Render-style startup flow. An actual Render deployment, its 512 MB service memory limit, external HTTPS URL, sleeping/waking behavior and cloud database connectivity remain unverified until account authorization and deployment. No paid resources were created.
+This was a local verification of the Render-style startup flow. The application was subsequently deployed by the user at https://billshield-tyxt.onrender.com and all three public-site browser/API scenarios passed. Its 512 MB capacity under load and sleeping/waking behavior remain unverified. No paid resources were created.
+
+## Presentation refresh (2026-11-15)
+
+Regenerated a ten-slide, 16:9 PDF and a standalone HTML presentation with embedded fonts/images, English speaker notes for all ten slides, QR codes and nine clickable PDF links. Captured seven screenshots from a new isolated guest on the actual hosted application using a fictional sample PDF; deleted that synthetic workspace afterward. No real provider was contacted.
+
+The generator checked all ten slide bounds and the final PDF page count. Additional browser verification confirmed keyboard navigation, notes toggling, all ten English notes, no Cyrillic text and no browser errors. Strict TypeScript, ESLint and dependency audit passed; zero reported vulnerabilities. No application/domain code changed during this presentation refresh.

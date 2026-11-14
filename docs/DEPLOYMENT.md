@@ -2,7 +2,7 @@
 
 ## Current state
 
-Source, migrations, fixtures, container configuration, CI and pitch artifacts are prepared locally. GitHub authentication was found through Git Credential Manager and source was published at [https://github.com/Eqziz/billshield](https://github.com/Eqziz/billshield); anonymous HTTP access and matching remote source commits were verified. There is **no verified public production application URL**. Vercel and managed PostgreSQL are not configured. Sites hosting targets Cloudflare Workers and cannot run this Node child-process/Prisma application unchanged; a static landing-page deployment would not meet the product acceptance criteria.
+Source, migrations, fixtures, container configuration, CI and pitch artifacts are prepared locally. GitHub authentication was found through Git Credential Manager and source was published at [https://github.com/Eqziz/billshield](https://github.com/Eqziz/billshield); anonymous HTTP access and matching remote source commits were verified. The deployed application is verified at **https://billshield-tyxt.onrender.com** using Render and managed PostgreSQL. The full guest workflow passed against this public URL. Vercel is not configured. Sites hosting targets Cloudflare Workers and cannot run this Node child-process/Prisma application unchanged; a static landing-page deployment would not meet the product acceptance criteria.
 
 ## Recommended complete runtime: Node container + PostgreSQL
 
