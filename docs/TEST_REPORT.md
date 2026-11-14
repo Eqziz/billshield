@@ -10,7 +10,7 @@ Executed locally on Windows, **2026-11-14**, with Node **22.23.5**, Next.js **16
 | `prisma migrate deploy`             | Both SQL migrations successfully applied to local PostgreSQL.                            |
 | `npm run typecheck`                 | Passed.                                                                                  |
 | `npm run lint`                      | Passed, zero errors/warnings.                                                            |
-| `npm test`                          | **38 passed** across two files, no failures or worker errors.                            |
+| `npm test`                          | **47 passed** across three files, no failures or worker errors.                          |
 | `npm run build`                     | Successful production compilation, type validation and route generation.                 |
 | `npm run test:e2e`                  | **3 passed**, production Next server and Chromium.                                       |
 | `npm audit`                         | **Zero vulnerabilities** after documented dependency overrides.                          |
@@ -54,3 +54,9 @@ Fixtures are synthetic and clearly marked in the documents and application. Prod
 - Confirmed savings are user-attested; annualized projections assume twelve unchanged months. One-time refunds are notes, not recurring savings.
 - Safari/Firefox, assistive-technology audits, sustained load, hostile PDF fuzzing and independent security review were not performed.
 - Add actual team names to the final pitch before submission; none were supplied.
+
+## Free-hosting preparation verification
+
+The Render Blueprint passed the official JSON Schema from https://render.com/schema/render.yaml.json. Nine hosted-configuration tests cover Render origin/port resolution, custom domains, local verification and fail-closed validation. Strict TypeScript and lint passed. The hosted launcher successfully applied migrations, removed expired guests and ran the production application with a 192 MB Next.js heap; all three production browser/API scenarios passed against that launcher. All 47 Vitest tests passed afterward.
+
+This was a local verification of the Render-style startup flow. An actual Render deployment, its 512 MB service memory limit, external HTTPS URL, sleeping/waking behavior and cloud database connectivity remain unverified until account authorization and deployment. No paid resources were created.

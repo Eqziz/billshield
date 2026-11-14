@@ -1,0 +1,34 @@
+# All declared compute plans are free. No paid cron, disk or pre-deploy service.
+services:
+  - type: web
+    name: billshield
+    runtime: node
+    plan: free
+    region: virginia
+    branch: main
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm run start:hosted
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: billshield-db
+          property: connectionString
+      - key: RATE_LIMIT_SECRET
+        generateValue: true
+      - key: CRON_SECRET
+        generateValue: true
+databases:
+  - name: billshield-db
+    plan: free
+    region: virginia
+    databaseName: billshield
+    user: billshield
+    postgresMajorVersion: "17"
+    ipAllowList: []

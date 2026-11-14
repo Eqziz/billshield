@@ -6,6 +6,8 @@ Source, migrations, fixtures, container configuration, CI and pitch artifacts ar
 
 ## Recommended complete runtime: Node container + PostgreSQL
 
+For a zero-cost, time-limited hackathon demo, use the [prepared Render Free Blueprint](RENDER.md). It creates the web service and database, generates secrets, configures the assigned origin and runs migrations at startup. The free database expires after 30 days. The generic production instructions below target durable infrastructure rather than this temporary free demo.
+
 1. Provision a TLS PostgreSQL 16+ database and a Node/Docker hosting service (or your own server).
 2. Set `DATABASE_URL`, `APP_ORIGIN=https://your-public-domain`, `RATE_LIMIT_SECRET` and `CRON_SECRET`. Keep secrets in the host's secret store. Configure `TRUST_PROXY=1` only behind a proxy that overwrites forwarding headers.
 3. Run `npm ci`, then `npm run db:migrate` against the deployment database as a release step. Do not use `db push` in production.

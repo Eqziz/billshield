@@ -85,6 +85,8 @@ Playwright starts a production server if one is not already running. PostgreSQL 
 
 ## Deployment and submission
 
+Free hackathon deployment: **[Deploy to Render](https://render.com/deploy?repo=https://github.com/Eqziz/billshield)**. The included Blueprint declares a Free web service and Free PostgreSQL database, generates secrets and applies migrations automatically. The web service sleeps on inactivity; the free database expires after 30 days. See [the exact setup and limits](docs/RENDER.md). This link opens deployment setup; an actual hosted URL is not yet verified.
+
 See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for Docker/managed PostgreSQL and Vercel instructions, serverless upload caveats and release checks. Public source: [https://github.com/Eqziz/billshield](https://github.com/Eqziz/billshield), verified accessible without authentication. **No public application deployment has been verified.** Hosting and managed database access are still needed. The Node/Prisma/child-process application is not compatible with Sites Worker hosting without substantial runtime changes.
 
 Pitch source: [PITCH.md](docs/PITCH.md). Generate the ten-slide PDF with `npm run pitch`.
