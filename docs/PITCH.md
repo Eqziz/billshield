@@ -30,7 +30,7 @@ No provider credentials or bank connection.
 Demo: open /demo, upload the labeled October sample, review and analyze.
 Open an equipment action, record a provider-confirmed recurring reduction, refresh the dashboard.
 Upload November to the same account for comparison. Delete the workspace at the end.
-Production URL and public source URL remain external release prerequisites.
+Public source: https://github.com/Eqziz/billshield. Production application URL remains a release prerequisite.
 
 ## 6. Technology and differentiation
 

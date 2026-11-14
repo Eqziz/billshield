@@ -44,7 +44,7 @@ Fixtures are synthetic and clearly marked in the documents and application. Prod
 
 ## Unverified areas and release blockers
 
-- No verified public URL or public GitHub repository. GitHub and Vercel integrations require installation/connection; no remote source was pushed.
+- Public source is published and verified at https://github.com/Eqziz/billshield: anonymous HTTP 200 and matching GitHub/local source commits. No public application URL has been verified. The pushed workflow can run CI; its remote results must be checked separately from the local results above.
 - No production managed PostgreSQL, HTTPS/proxy configuration, request concurrency/body-size limits or scheduled cleanup has been provisioned.
 - Docker and Linux CI configurations are provided but were not executed locally. Only Windows/Node 22 and Chromium were executed.
 - Serverless subprocess dependency tracing needs a real hosted smoke test. Vercel ingress may reject documents below the app's 10 MB maximum; use a Node container or implement private-storage intake before promising the full limit there.

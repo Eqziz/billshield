@@ -74,7 +74,7 @@ Dates are optional/null but if supplied must be real ISO calendar dates. Totals 
 
 Statuses: PLANNED, PENDING, SUCCESSFUL, UNSUCCESSFUL. Only successful actions can have confirmed reductions. Outcome upserts one row per action. Omitting an outcome removes any existing savings row for that action; script/status/notes remain. One-time-fee actions cannot create recurring savings. GET returns action context and savings history entry.
 
-Uploaded original bytes are discarded. Deleting a bill cascades its analyses/actions/outcomes; document processing metadata may remain until full workspace deletion/expiration. Full privacy deletion removes all metadata. No public document download endpoint exists.
+Uploaded original bytes are discarded. Deleting a bill removes its document metadata and cascades its analyses/actions/outcomes. Full privacy deletion removes all metadata. No public document download endpoint exists.
 
 Idempotency: session creation with a valid cookie reuses it; analysis is unique per revision; action is unique per opportunity; outcome is unique per action; repeated PDF hashes in one workspace return the existing bill. Parallel conflicting mutations can return 409. Manual draft creation is intentionally a new bill each time and clients must disable repeat submission. No payment operations exist.
 

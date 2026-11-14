@@ -2,7 +2,7 @@
 
 ## Current state
 
-Source, migrations, fixtures, container configuration, CI and pitch artifacts are prepared locally. No Vercel, managed PostgreSQL or GitHub credentials were supplied. There is **no verified public production URL or repository URL**. Sites hosting targets Cloudflare Workers and cannot run this Node child-process/Prisma application unchanged; a static landing-page deployment would not meet the product acceptance criteria.
+Source, migrations, fixtures, container configuration, CI and pitch artifacts are prepared locally. GitHub authentication was found through Git Credential Manager and source was published at [https://github.com/Eqziz/billshield](https://github.com/Eqziz/billshield); anonymous HTTP access and matching remote source commits were verified. There is **no verified public production application URL**. Vercel and managed PostgreSQL are not configured. Sites hosting targets Cloudflare Workers and cannot run this Node child-process/Prisma application unchanged; a static landing-page deployment would not meet the product acceptance criteria.
 
 ## Recommended complete runtime: Node container + PostgreSQL
 
@@ -26,19 +26,17 @@ The Next config explicitly traces the standalone PDF subprocess and its runtime 
 
 Schedule cleanup externally via authenticated POST or a release-owned cron runner. No unauthenticated cron route is provided. Optional Sentry and OpenAI require separate configuration and live verification.
 
-## Publish GitHub source
+## Public GitHub source
 
-Create an empty **public** repository in the intended GitHub account, then from this checkout:
+Published and verified: [https://github.com/Eqziz/billshield](https://github.com/Eqziz/billshield). The remote is configured as `origin`. Subsequent changes can be published with `git push origin main` using the existing Git Credential Manager authentication.
 
 ```text
-git init -b main
-git add .
-git commit -m "Build BillShield internet bill analysis application"
-git remote add origin https://github.com/YOUR_ACCOUNT/billshield.git
-git push -u origin main
+git clone https://github.com/Eqziz/billshield.git
+cd billshield
+npm ci
 ```
 
-Review tracked files first; `.env`, `.local`, dependencies and private runtime data are ignored. Verify the repository is readable in a signed-out browser. GitHub credentials and account selection are external prerequisites; no account or URL is invented here.
+`.env`, `.local`, dependencies and private runtime data are ignored. No credential was written to source files or included in the remote URL. Public source access does not deploy the running application.
 
 ## Release checks
 

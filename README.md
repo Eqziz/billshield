@@ -85,7 +85,7 @@ Playwright starts a production server if one is not already running. PostgreSQL 
 
 ## Deployment and submission
 
-See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for Docker/managed PostgreSQL and Vercel instructions, serverless upload caveats and release checks. **No public deployment or public GitHub repository has been created or verified.** Cloud account access is needed. The Node/Prisma/child-process application is not compatible with Sites Worker hosting without substantial runtime changes.
+See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for Docker/managed PostgreSQL and Vercel instructions, serverless upload caveats and release checks. Public source: [https://github.com/Eqziz/billshield](https://github.com/Eqziz/billshield), verified accessible without authentication. **No public application deployment has been verified.** Hosting and managed database access are still needed. The Node/Prisma/child-process application is not compatible with Sites Worker hosting without substantial runtime changes.
 
 Pitch source: [PITCH.md](docs/PITCH.md). Generate the ten-slide PDF with `npm run pitch`.
 
