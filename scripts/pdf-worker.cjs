@@ -79,6 +79,22 @@ process.once("message", async (buffer) => {
       isEvalSupported: false,
       CanvasFactory,
       maxImageSize: 16_000_000,
+      standardFontDataUrl:
+        path.join(
+          path.dirname(require.resolve("pdfjs-dist/package.json")),
+          "standard_fonts",
+        ) + path.sep,
+      cMapUrl:
+        path.join(
+          path.dirname(require.resolve("pdfjs-dist/package.json")),
+          "cmaps",
+        ) + path.sep,
+      cMapPacked: true,
+      wasmUrl:
+        path.join(
+          path.dirname(require.resolve("pdfjs-dist/package.json")),
+          "wasm",
+        ) + path.sep,
       verbosity: 0,
     }).promise;
     if (document.numPages > 20) throw new Error("TOO_MANY_PAGES");
@@ -87,6 +103,12 @@ process.once("message", async (buffer) => {
       pdfjs.OPS.paintInlineImageXObject,
       pdfjs.OPS.paintImageXObjectRepeat,
       pdfjs.OPS.paintInlineImageXObjectGroup,
+    ]);
+    const textPaintOps = new Set([
+      pdfjs.OPS.showText,
+      pdfjs.OPS.showSpacedText,
+      pdfjs.OPS.nextLineShowText,
+      pdfjs.OPS.nextLineSetSpacingShowText,
     ]);
     const pages = [],
       ocrPages = [],
@@ -150,6 +172,12 @@ process.once("message", async (buffer) => {
                 canvas,
                 viewport,
                 background: "rgb(255,255,255)",
+                // Native text has already been extracted exactly. OCR only the
+                // remaining artwork/images so font rasterization cannot add a
+                // second, slightly misspelled copy of an authoritative charge.
+                operationsFilter: text.trim()
+                  ? (index) => !textPaintOps.has(operations.fnArray[index])
+                  : undefined,
               }).promise;
               const result = await ocr.recognize(canvas.toBuffer("image/png"), {
                 rotateAuto: true,
