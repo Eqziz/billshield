@@ -17,9 +17,9 @@ flowchart LR
   Rules --> Action[Template script and outcome]
 ```
 
-PDF content is accepted only as PDF MIME + extension + signature, capped at 10 MB. The parser accepts at most 20 pages, extracts at most 150,000 characters and runs with a 20-second timeout/192 MB JS heap. PDF scripts are never executed. No document URL is loaded; embedded images are not rendered. The process has no UI and is killed on timeout. Container memory limits are needed to cap native allocations and concurrent requests. Filenames are metadata, never filesystem paths.
+PDF content is accepted only as PDF MIME + extension + signature, capped at 10 MB. The parser accepts at most 20 pages, extracts at most 150,000 characters and runs with a 90-second timeout/192 MB JS heap. PDF scripts are never executed. No document URL is loaded; large image-bearing pages are rendered at a bounded resolution for local English Tesseract OCR. The process has no UI and is killed on timeout. Container memory limits are needed to cap native allocations and concurrent requests. Filenames are metadata, never filesystem paths.
 
-Text extraction recognizes explicit statement totals, date labels, provider labels/common provider names and trailing dollar values. It is intentionally conservative and cannot reliably read every provider layout. Unknown totals and dates remain null. Uncertain charges are marked for review. Scans lead to manual entry, not invented OCR.
+Text extraction recognizes explicit statement totals, date labels, provider labels/common provider names and trailing dollar values. It is intentionally conservative and cannot reliably read every provider layout. Unknown totals and dates remain null. Uncertain charges are marked for review. Image-only and mixed text/image pages use local Tesseract OCR with a bundled English model. Up to five pages are OCR-processed per document; native text is retained for the rest. Native monetary rows take precedence over their OCR duplicates. Unreadable or skipped pages are flagged for review. A database-backed expiring lease serializes PDF jobs to protect the free hosting instance.
 
 AI is an optional replaceable function adapter. Its strict JSON output is parsed with Zod; every charge must cite exact document evidence containing the same monetary amount. Failed, malformed or ungrounded output falls back. Calculations and scripts never depend on an LLM. Prompt injection cannot modify domain rules. Redaction is best effort and not a complete PII detector.
 
@@ -47,4 +47,4 @@ Database rate limits use HMAC-hashed trusted proxy addresses and minute buckets.
 
 Deployment: Node 22 container or Node serverless host + TLS PostgreSQL; no Redis or public file bucket. A scheduler invokes authenticated cleanup. No external infrastructure is provisioned in this checkout. Optional Sentry reports only generic failure events; live delivery is unverified.
 
-Tradeoffs: conservative extraction needs human review; API routing is centralized while services/domain stay separated; custom CSS avoids unnecessary UI dependencies; no OCR/authentication/checkout until the core workflow is proven. Tests use real PostgreSQL and real PDFs, not hardcoded extraction branches.
+Tradeoffs: conservative extraction needs human review; API routing is centralized while services/domain stay separated; custom CSS avoids unnecessary UI dependencies; no authenticated accounts or checkout yet. Tests use real PostgreSQL and real PDFs, not hardcoded extraction branches.

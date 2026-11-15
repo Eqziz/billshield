@@ -49,7 +49,7 @@ Fixtures are synthetic and clearly marked in the documents and application. Prod
 - Docker and Linux CI configurations are provided but were not executed locally. Only Windows/Node 22 and Chromium were executed.
 - Serverless subprocess dependency tracing needs a real hosted smoke test. Vercel ingress may reject documents below the app's 10 MB maximum; use a Node container or implement private-storage intake before promising the full limit there.
 - Live AI output quality and Sentry delivery are unverified. Their failure paths are tested/sanitized; neither integration is advertised as live in the default configuration.
-- No scanned-PDF OCR, provider account validation, actual provider offers, payment processing or authenticated long-term accounts.
+- English scanned-PDF and mixed-image OCR is implemented. Non-English/poor-quality scans, provider account validation, actual provider offers, payment processing and authenticated long-term accounts remain unsupported or unverified.
 - Extraction was tested against synthetic text-based PDFs, not an external corpus of real provider layouts. Review/correction remains required.
 - Confirmed savings are user-attested; annualized projections assume twelve unchanged months. One-time refunds are notes, not recurring savings.
 - Safari/Firefox, assistive-technology audits, sustained load, hostile PDF fuzzing and independent security review were not performed.
@@ -66,3 +66,9 @@ This was a local verification of the Render-style startup flow. The application 
 Regenerated a ten-slide, 16:9 PDF and a standalone HTML presentation with embedded fonts/images, English speaker notes for all ten slides, QR codes and nine clickable PDF links. Captured seven screenshots from a new isolated guest on the actual hosted application using a fictional sample PDF; deleted that synthetic workspace afterward. No real provider was contacted.
 
 The generator checked all ten slide bounds and the final PDF page count. Additional browser verification confirmed keyboard navigation, notes toggling, all ten English notes, no Cyrillic text and no browser errors. Strict TypeScript, ESLint and dependency audit passed; zero reported vulnerabilities. No application/domain code changed during this presentation refresh.
+
+## Image OCR hotfix (2026-11-15)
+
+Implemented local English Tesseract OCR for image-only and mixed text/image PDF pages. The English model and WASM runtime ship with dependencies; no OCR API key or runtime model download is required. Native monetary rows are preserved instead of replaced by OCR duplicates. Untouched legacy drafts can be re-extracted; edited/confirmed records are protected. A database-backed expiring lease serializes PDF/OCR jobs on the small hosting instance.
+
+Local verification: all 53 unit/PDF/OCR/PostgreSQL/hosting tests passed; all 4 production Chromium scenarios passed, including a real image-only PDF upload through editable review and analysis. Strict TypeScript, ESLint and production build passed. Image-only and mixed-image fixtures contain actual rasterized charges, not filename-specific extraction code. Public deployment verification is recorded separately after Render updates. OCR currently supports English, five OCR pages per document, bounded rendering and a 90-second processing limit; unclear amounts still require human correction.

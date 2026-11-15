@@ -20,12 +20,68 @@ import {
 } from "../src/server/bills";
 import { getAction, updateAction } from "../src/server/actions";
 import { billSchema } from "../src/lib/validation";
+import { acquirePdfSlot } from "../src/server/processing";
 const created: string[] = [];
 afterAll(async () => {
   await db.workspace.deleteMany({ where: { id: { in: created } } });
   await db.$disconnect();
 });
 describe.sequential("PostgreSQL integration", () => {
+  it("serializes PDF jobs and releases the processing slot", async () => {
+    const release = await acquirePdfSlot();
+    try {
+      await expect(acquirePdfSlot()).rejects.toMatchObject({
+        code: "PROCESSING_BUSY",
+      });
+    } finally {
+      await release();
+    }
+    const next = await acquirePdfSlot();
+    await next();
+  });
+  it("upgrades untouched legacy extraction without overwriting user edits", async () => {
+    const w = await db.workspace.create({
+      data: { expiresAt: new Date(Date.now() + 86400000) },
+    });
+    created.push(w.id);
+    const data = {
+      providerName: "Synthetic ISP",
+      totalCents: null,
+      lineItems: [],
+    };
+    const original = await createBill(w.id, data, {
+      name: "legacy-scan.pdf",
+      size: 100,
+      sha256: `test-${w.id}`,
+      mode: "manual-required",
+    });
+    const input = {
+      providerName: "Synthetic ISP",
+      totalCents: 7500,
+      lineItems: [
+        {
+          description: "Internet service",
+          category: "SERVICE",
+          amountCents: 7500,
+          recurrenceType: "MONTHLY",
+        },
+      ],
+    };
+    const upgraded = await updateBill(w.id, original.id, input, "ocr-v2");
+    expect(upgraded.extractionVersion).toBe("ocr-v2");
+    expect(upgraded.totalCents).toBe(7500);
+    expect(
+      (
+        await db.documentAsset.findUniqueOrThrow({
+          where: { id: original.documentAssetId! },
+        })
+      ).processingStatus,
+    ).toBe("ocr-v2");
+    await expect(
+      updateBill(w.id, original.id, { ...input, totalCents: 8000 }, "ocr-v2"),
+    ).rejects.toMatchObject({ code: "BILL_ALREADY_EDITED" });
+    expect((await getBill(w.id, original.id)).totalCents).toBe(7500);
+  });
   it("rejects missing production protection configuration and invalid origins", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("RATE_LIMIT_SECRET", "");

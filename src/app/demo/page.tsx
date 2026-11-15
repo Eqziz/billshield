@@ -27,7 +27,7 @@ export default function Demo() {
         </p>
         <div className="welcome-features">
           <span>
-            <FileText /> Text-based internet PDFs, up to 10 MB
+            <FileText /> Internet PDFs and English scans, up to 10 MB
           </span>
           <span>
             <LockKeyhole /> Originals discarded after processing

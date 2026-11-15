@@ -2,7 +2,14 @@ import { spawn } from "node:child_process";
 import path from "node:path";
 import { classify, normalizeDate, parseMoney } from "@/lib/domain";
 import { billSchema, type BillInput } from "@/lib/validation";
-export async function pdfText(buffer: Buffer): Promise<string> {
+export type PdfExtraction = {
+  text: string;
+  ocrUsed: boolean;
+  ocrPages: number[];
+  ocrConfidence: number | null;
+  warnings: string[];
+};
+export async function processPdf(buffer: Buffer): Promise<PdfExtraction> {
   return new Promise((resolve, reject) => {
     const worker = spawn(
       process.execPath,
@@ -19,22 +26,36 @@ export async function pdfText(buffer: Buffer): Promise<string> {
     const timer = setTimeout(() => {
       worker.kill();
       reject(new Error("PDF_TIMEOUT"));
-    }, 20000);
+    }, 90000);
+    let output: (Partial<PdfExtraction> & { error?: string }) | undefined;
     worker.send(buffer);
-    worker.once("message", (result: { text?: string; error?: string }) => {
-      clearTimeout(timer);
-      if (result.error) reject(new Error(result.error));
-      else resolve(result.text || "");
-    });
+    worker.once(
+      "message",
+      (result: Partial<PdfExtraction> & { error?: string }) => {
+        output = result;
+      },
+    );
     worker.once("error", () => {
       clearTimeout(timer);
       reject(new Error("UNREADABLE_PDF"));
     });
-    worker.once("exit", () => {
+    worker.once("exit", (code) => {
       clearTimeout(timer);
-      reject(new Error("UNREADABLE_PDF"));
+      if (code !== 0 || !output || output.error)
+        reject(new Error(output?.error || "UNREADABLE_PDF"));
+      else
+        resolve({
+          text: output.text || "",
+          ocrUsed: output.ocrUsed || false,
+          ocrPages: output.ocrPages || [],
+          ocrConfidence: output.ocrConfidence ?? null,
+          warnings: output.warnings || [],
+        });
     });
   });
+}
+export async function pdfText(buffer: Buffer): Promise<string> {
+  return (await processPdf(buffer)).text;
 }
 export function extractText(text: string): BillInput {
   const lines = text

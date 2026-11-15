@@ -124,12 +124,25 @@ export function BillForm({
       }}
     >
       <ErrorBox message={error} />
-      {bill?.extractionVersion === "manual-required" && (
+      {bill?.extractionVersion.includes("manual-required") && (
         <div className="notice amber">
           <AlertTriangle size={20} />
           <p>
-            This PDF has no usable text. Enter its details below; OCR is not
-            enabled.
+            No usable bill text was recognized, including image OCR. Enter or
+            correct the details below.
+          </p>
+        </div>
+      )}
+      {bill?.extractionVersion.includes("ocr-") && (
+        <div className="notice amber">
+          <AlertTriangle size={18} />
+          <p>
+            Image OCR was used for this document. Check every amount against the
+            original image. English image text is supported on up to 5 pages.
+            {bill.extractionVersion.includes("partial") ||
+            bill.extractionVersion.includes("incomplete")
+              ? " Some image text could not be processed; add any missing details manually."
+              : ""}
           </p>
         </div>
       )}
@@ -142,7 +155,9 @@ export function BillForm({
               : ""}
             {bill.extractionVersion.includes("ai-assisted-v1")
               ? "AI-assisted extraction"
-              : "Deterministic text extraction"}{" "}
+              : bill.extractionVersion.includes("ocr-")
+                ? "PDF image OCR"
+                : "Deterministic text extraction"}{" "}
             · Verify all amounts and dates against your original statement.
             Extraction confidence is not a guarantee of accuracy.
           </p>

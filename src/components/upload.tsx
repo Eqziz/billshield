@@ -37,6 +37,13 @@ export function UploadBill() {
       return;
     }
     setBusy("Reading your PDF and finding the bill details…");
+    const feedback = setTimeout(
+      () =>
+        setBusy(
+          "Recognizing text and images in your PDF. Scanned pages can take up to 90 seconds…",
+        ),
+      4000,
+    );
     try {
       await initialize();
       const form = new FormData();
@@ -51,6 +58,8 @@ export function UploadBill() {
     } catch (e) {
       setError((e as Error).message);
       setBusy("");
+    } finally {
+      clearTimeout(feedback);
     }
   }
   async function sample(name: string) {
@@ -265,8 +274,8 @@ export function UploadBill() {
               </li>
             </ol>
             <p className="tiny">
-              Scanned PDFs need manual entry. We never guess missing financial
-              values.
+              English image text is recognized with OCR on up to 5 pages. Review
+              every amount; unreadable details can be entered manually.
             </p>
           </div>
         </aside>

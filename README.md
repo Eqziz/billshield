@@ -34,7 +34,7 @@ Start at `/demo`, upload a real PDF, review fields, confirm and analyze, create 
 
 - Responsive marketing, demo, dashboard, bills, editable review, analysis, action center, pricing and privacy pages.
 - Secure anonymous sessions, hashed tokens, database-backed isolation, seven-day expiration and deletion.
-- Real text-based PDF parsing, signatures/MIME/size validation, ephemeral documents, manual fallback for scans.
+- Real PDF text extraction and local English image OCR, signatures/MIME/size validation, ephemeral documents and manual correction.
 - Exact integer-cent calculations, equipment/add-on/fee/promotion rules, same-account chronological bill comparison, explicit reconciliation.
 - Evidence-backed recommendations, conditional savings ranges, personalized template scripts, provider responses and confirmed outcomes.
 - Persistent dashboard, historical statements, action statuses and consolidated per-account savings.
@@ -42,7 +42,7 @@ Start at `/demo`, upload a real PDF, review fields, confirm and analyze, create 
 
 ## Architecture
 
-Next.js 16 App Router + React + strict TypeScript, Lucide icons and a custom responsive CSS system. Route handlers delegate to modular application services, Prisma 6 and PostgreSQL. Zod validates inputs. Domain rules contain no database or AI dependencies. PDF parsing happens in a short-lived child process with a 192 MB V8 heap limit and 20-second timeout; native allocations are additionally constrained by production container limits. See [architecture](docs/ARCHITECTURE.md) and [API](docs/API.md).
+Next.js 16 App Router + React + strict TypeScript, Lucide icons and a custom responsive CSS system. Route handlers delegate to modular application services, Prisma 6 and PostgreSQL. Zod validates inputs. Domain rules contain no database or AI dependencies. PDF parsing happens in a short-lived child process with a 192 MB V8 heap limit and 90-second timeout; native allocations are additionally constrained by production container limits. See [architecture](docs/ARCHITECTURE.md) and [API](docs/API.md).
 
 ## Product screenshots
 
@@ -97,6 +97,6 @@ Presentation: [10-slide PDF](docs/BillShield-pitch.pdf), [standalone HTML deck](
 
 Original PDFs are not retained or served. Extracted financial fields and evidence, original filename, hash, byte count, minimal audit events and quota counters persist until deletion/expiry cleanup. Do not put account numbers in labels. Anonymous access requires the server-issued HttpOnly cookie. All object lookups enforce workspace ownership. State-changing browser requests require an exact Origin match. Rates and quotas persist in PostgreSQL.
 
-This release has no OCR, provider integrations, automated negotiation, payments or long-term authenticated accounts. Pricing is a hypothesis. Confirmed savings are **user-attested**, not independently verified with a provider. Annualized amounts project twelve unchanged months; one-time credits are excluded. A bill increase is a comparison, not an assumed recoverable discount. Optional AI redaction is best effort; use manual entry to avoid sending document text to a provider.
+English image OCR supports up to five pages per PDF, including mixed native-text/image documents. Poor-quality or non-English scans still require manual correction. This release has no provider integrations, automated negotiation, payments or long-term authenticated accounts. Pricing is a hypothesis. Confirmed savings are **user-attested**, not independently verified with a provider. Annualized amounts project twelve unchanged months; one-time credits are excluded. A bill increase is a comparison, not an assumed recoverable discount. Optional AI redaction is best effort; use manual entry to avoid sending document text to a provider.
 
 Session creation opportunistically removes expired guests; production must also schedule cleanup. Seven days is the guest retention window, not a promise that an unscheduled deployment physically deletes records at the exact expiration second. Expired sessions immediately lose access. Metadata deletion is described in the API guide.

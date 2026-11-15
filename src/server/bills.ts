@@ -104,6 +104,7 @@ export async function updateBill(
   workspaceId: string,
   id: string,
   raw: unknown,
+  extractionMode?: string,
 ) {
   const data = billSchema.parse(raw);
   return db.$transaction(
@@ -121,6 +122,12 @@ export async function updateBill(
         },
       });
       if (!bill) notFound();
+      if (extractionMode && (bill.status !== "DRAFT" || bill.revision !== 1))
+        throw new ApiError(
+          409,
+          "BILL_ALREADY_EDITED",
+          "This bill was edited while it was being rescanned. Your changes were preserved.",
+        );
       const account = data.serviceAccountId
         ? await tx.serviceAccount.findFirst({
             where: { id: data.serviceAccountId, workspaceId },
@@ -150,10 +157,16 @@ export async function updateBill(
         data: { status: "STALE" },
       });
       await tx.billLineItem.deleteMany({ where: { billId: id } });
+      if (extractionMode && bill.documentAssetId)
+        await tx.documentAsset.update({
+          where: { id: bill.documentAssetId },
+          data: { processingStatus: extractionMode },
+        });
       return tx.bill.update({
         where: { id },
         data: {
           ...billFields(data),
+          ...(extractionMode ? { extractionVersion: extractionMode } : {}),
           ...(account ? { serviceAccountId: account.id } : {}),
           revision: { increment: 1 },
           status: "DRAFT",

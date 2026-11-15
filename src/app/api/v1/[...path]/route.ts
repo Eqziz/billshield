@@ -27,11 +27,17 @@ import {
 } from "@/server/bills";
 import { getAction, updateAction } from "@/server/actions";
 import { dashboard } from "@/server/dashboard";
-import { enhanceExtraction, extractText, pdfText } from "@/server/extraction";
+import {
+  enhanceExtraction,
+  extractText,
+  processPdf,
+  type PdfExtraction,
+} from "@/server/extraction";
+import { acquirePdfSlot } from "@/server/processing";
 import { reportError } from "@/server/monitoring";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+export const maxDuration = 120;
 type Context = { params: Promise<{ path: string[] }> };
 async function json(request: NextRequest) {
   if (!request.headers.get("content-type")?.includes("application/json"))
@@ -67,6 +73,7 @@ async function handler(request: NextRequest, context: Context) {
       await db.$queryRaw`SELECT 1`;
       return ok({
         status: "ok",
+        ocr: "english-scans-v2",
         extraction: process.env.OPENAI_API_KEY
           ? "deterministic-with-optional-ai"
           : "deterministic",
@@ -191,24 +198,33 @@ async function handler(request: NextRequest, context: Context) {
         },
         include: { bill: { include: billInclude } },
       });
-      if (existing?.bill)
+      const upgrade =
+        existing?.bill &&
+        existing.bill.status === "DRAFT" &&
+        existing.bill.revision === 1 &&
+        !existing.processingStatus.includes("-v2");
+      if (existing?.bill && !upgrade)
         return ok({
           bill: existing.bill,
-          manualRequired: existing.processingStatus === "manual-required",
+          manualRequired: existing.processingStatus.includes("manual-required"),
           aiEnhanced: existing.processingStatus.includes("ai-assisted-v1"),
         });
       if (existing && !existing.bill)
         await db.documentAsset.delete({ where: { id: existing.id } });
-      let text: string;
+      let processed: PdfExtraction;
+      const release = await acquirePdfSlot();
       try {
-        text = await pdfText(bytes);
+        processed = await processPdf(bytes);
       } catch {
         throw new ApiError(
           422,
           "UNREADABLE_PDF",
-          "This PDF could not be read. Try an unlocked text-based PDF, up to 20 pages, or enter the bill manually.",
+          "This PDF could not be processed within the resource limit. Try an unlocked PDF, split a long scan into smaller files, or enter the bill manually.",
         );
+      } finally {
+        await release();
       }
+      const text = processed.text;
       let data = extractText(text);
       let enhanced = false;
       if (text.trim().length > 30 && process.env.OPENAI_API_KEY) {
@@ -226,14 +242,44 @@ async function handler(request: NextRequest, context: Context) {
       const selected = form.get("serviceAccountId");
       if (typeof selected === "string" && selected)
         data.serviceAccountId = selected;
-      const bill = await createBill(workspace.id, data, {
-        name: file.name,
-        size: file.size,
-        sha256: digest,
-        mode: `${/\bSYNTHETIC FIXTURE\b/i.test(text) ? "synthetic-" : ""}${enhanced ? "ai-assisted-v1" : text.trim().length < 30 ? "manual-required" : "deterministic-v1"}`,
-      });
+      if (processed.ocrUsed)
+        data.lineItems = data.lineItems.map((l) => ({
+          ...l,
+          confidence: Math.min(
+            l.confidence,
+            0.7,
+            (processed.ocrConfidence ?? 60) / 100,
+          ),
+        }));
+      const manualRequired = text.trim().length < 30;
+      const method = manualRequired
+        ? "manual-required-v2"
+        : processed.ocrUsed
+          ? processed.warnings.length
+            ? "ocr-partial-v2"
+            : "ocr-v2"
+          : processed.warnings.length
+            ? "ocr-incomplete-v2"
+            : "deterministic-v2";
+      const mode = `${/\bSYNTHETIC FIXTURE\b/i.test(text) ? "synthetic-" : ""}${method}${enhanced ? "-ai-assisted-v1" : ""}`;
+      const bill =
+        upgrade && existing?.bill
+          ? await updateBill(workspace.id, existing.bill.id, data, mode)
+          : await createBill(workspace.id, data, {
+              name: file.name,
+              size: file.size,
+              sha256: digest,
+              mode,
+            });
       return ok(
-        { bill, manualRequired: text.trim().length < 30, aiEnhanced: enhanced },
+        {
+          bill,
+          manualRequired,
+          aiEnhanced: enhanced,
+          ocrUsed: processed.ocrUsed,
+          ocrPages: processed.ocrPages,
+          warnings: processed.warnings,
+        },
         201,
       );
     }

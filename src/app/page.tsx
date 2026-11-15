@@ -275,7 +275,7 @@ export default function Home() {
               ],
               [
                 "What kinds of bills work?",
-                "Start with U.S. residential internet bills in PDF format, up to 10 MB and 20 pages. Text-based PDFs work best. Scanned or unreadable documents can be entered manually.",
+                "U.S. residential internet bills in PDF format, up to 10 MB and 20 pages. OCR reads English text inside images on up to 5 pages, including mixed text-and-image PDFs. Review all recognized values; unreadable details can be entered manually.",
               ],
               [
                 "Is this AI-powered?",
