@@ -83,18 +83,18 @@ process.once("message", async (buffer) => {
         path.join(
           path.dirname(require.resolve("pdfjs-dist/package.json")),
           "standard_fonts",
-        ) + path.sep,
+        ) + "/",
       cMapUrl:
         path.join(
           path.dirname(require.resolve("pdfjs-dist/package.json")),
           "cmaps",
-        ) + path.sep,
+        ) + "/",
       cMapPacked: true,
       wasmUrl:
         path.join(
           path.dirname(require.resolve("pdfjs-dist/package.json")),
           "wasm",
-        ) + path.sep,
+        ) + "/",
       verbosity: 0,
     }).promise;
     if (document.numPages > 20) throw new Error("TOO_MANY_PAGES");

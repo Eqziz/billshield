@@ -74,6 +74,7 @@ async function handler(request: NextRequest, context: Context) {
       return ok({
         status: "ok",
         ocr: "english-scans-v2",
+        revision: process.env.RENDER_GIT_COMMIT?.slice(0, 7) || "local",
         extraction: process.env.OPENAI_API_KEY
           ? "deterministic-with-optional-ai"
           : "deterministic",
